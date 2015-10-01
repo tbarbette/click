@@ -211,9 +211,10 @@ Packet::~Packet()
     if (_data_packet)
 	_data_packet->kill();
 # if CLICK_USERLEVEL || CLICK_MINIOS
-    else if (_head && _destructor)
-	_destructor(_head, _end - _head, _destructor_argument);
-    else
+    else if (_head && _destructor) {
+        if (_destructor != empty_destructor)
+            _destructor(_head, _end - _head, _destructor_argument);
+    } else
 	delete[] _head;
 # elif CLICK_BSDMODULE
     if (_m)

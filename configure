@@ -10707,7 +10707,9 @@ $as_echo "$ac_cv_working_net_netmap_h" >&6; }
 
 $as_echo "#define HAVE_NET_NETMAP_H 1" >>confdefs.h
 
+        EXTRA_DRIVER_OBJS="netmapdevice.o $EXTRA_DRIVER_OBJS"
     fi
+
 
 
     if test "$HAVE_PCAP" != yes -a "$HAVE_NETMAP" != yes -a "$ac_cv_under_linux" != yes; then

@@ -97,7 +97,7 @@ int DPDKDevice::initialize_device(unsigned port_id, const DevInfo &info,
     dev_conf.rx_adv_conf.rss_conf.rss_key = NULL;
     dev_conf.rx_adv_conf.rss_conf.rss_hf = ETH_RSS_IP;
 
-    if (rte_eth_dev_configure(port_id, info.n_rx_queues, info.n_tx_queues,
+    if (rte_eth_dev_configure(port_id, (info.n_rx_queues>0?info.n_rx_queues:1), (info.n_tx_queues>0?info.n_tx_queues:1),
                               &dev_conf) < 0)
         return errh->error(
             "Cannot initialize DPDK port %u with %u RX and %u TX queues",
@@ -245,7 +245,7 @@ void DPDKDevice::fake_free_pkt(unsigned char *, size_t, void *)
 {
 }
 
-int DPDKDevice::NB_MBUF = 65536*8;
+int DPDKDevice::NB_MBUF = 65536;
 int DPDKDevice::MBUF_SIZE =
     2048 + sizeof (struct rte_mbuf) + RTE_PKTMBUF_HEADROOM;
 int DPDKDevice::MBUF_CACHE_SIZE = 256;

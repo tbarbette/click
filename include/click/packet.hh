@@ -106,6 +106,13 @@ class Packet { public:
         return _destructor_argument;
     }
 
+    /**
+     * Empty destructor which does nothing. Use this whenever possible instead
+     * of your own empty destructor as this special case will be detected and it
+     * won't be called.
+     */
+    static void empty_destructor(unsigned char*, size_t, void*) {};
+
     void reset_buffer() {
 	assert(!shared());
 	_head = _data = _tail = _end = 0;
