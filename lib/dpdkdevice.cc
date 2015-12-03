@@ -86,6 +86,9 @@ bool DPDKDevice::alloc_pktmbufs()
     } else {
 		int i = 0;
 		rte_mempool_walk(add_pool,(void*)&i);
+		if (i == 0) {
+			return false;
+		}
     }
 
     return true;
@@ -277,11 +280,13 @@ int DPDKDevice::initialize(ErrorHandler *errh)
     if (!alloc_pktmbufs())
         return errh->error("Could not allocate packet MBuf pools");
 
-    for (HashMap<unsigned, DevInfo>::iterator it = _devs.begin();
+    if (rte_eal_process_type() == RTE_PROC_PRIMARY) {
+        for (HashMap<unsigned, DevInfo>::iterator it = _devs.begin();
          it != _devs.end(); ++it) {
-        int ret = initialize_device(it.key(), it.value(), errh);
-        if (ret < 0)
-            return ret;
+            int ret = initialize_device(it.key(), it.value(), errh);
+            if (ret < 0)
+                return ret;
+        }
     }
 
     _is_initialized = true;
