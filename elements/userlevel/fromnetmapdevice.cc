@@ -29,7 +29,7 @@
 
 CLICK_DECLS
 
-FromNetmapDevice::FromNetmapDevice() : _device(NULL), _promisc(1),_blockant(false), _count(0), _burst(32)
+FromNetmapDevice::FromNetmapDevice() : _device(NULL), _promisc(1),_blockant(false), _count(0), _burst(32), _task(0)
 {
 	NetmapDevice::global_alloc += 2048;
 }

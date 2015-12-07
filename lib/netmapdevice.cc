@@ -67,8 +67,13 @@ int NetmapBufQ::static_initialize(struct nm_desc* nmd) {
  */
 uint32_t NetmapBufQ::static_cleanup()
 {
+	if (!netmap_buf_pools)
+		return 0;
+
 	for (unsigned int i = 1; i < click_max_cpu_ids(); i++) {
 		if (netmap_buf_pools[i]) {
+			if (netmap_buf_pools[i]->_head)
+				netmap_buf_pools[0]->insert_all(netmap_buf_pools[i]->_head, false);
 			delete netmap_buf_pools[i];
 			netmap_buf_pools[i] = NULL;
 		}
@@ -77,7 +82,7 @@ uint32_t NetmapBufQ::static_cleanup()
 	while (global_buffer_list > 0) {
 		uint32_t idx=global_buffer_list;
 		global_buffer_list = BUFFER_NEXT_LIST(global_buffer_list);
-		netmap_buf_pools[0]->insert_all(idx);
+		netmap_buf_pools[0]->insert_all(idx, false);
 	}
 
 	uint32_t idx = 0;
@@ -85,13 +90,14 @@ uint32_t NetmapBufQ::static_cleanup()
 		if (netmap_buf_pools[0]->_count == netmap_buf_pools[0]->count_buffers(idx))
 			click_chatter("Error on cleanup of netmap buffer ! Expected %d buffer, got %d",netmap_buf_pools[0]->_count,netmap_buf_pools[0]->count_buffers(idx));
 		else
-			click_chatter("Freeing %d netmap buffers",netmap_buf_pools[0]->_count);
+			click_chatter("Freeing %d Netmap buffers",netmap_buf_pools[0]->_count);
 		idx = netmap_buf_pools[0]->_head;
 		netmap_buf_pools[0]->_head = 0;
 		netmap_buf_pools[0]->_count = 0;
 	}
 	delete netmap_buf_pools[0];
 	netmap_buf_pools[0] = 0;
+	delete[] netmap_buf_pools;
 	return idx;
 }
 
