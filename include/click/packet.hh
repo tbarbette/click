@@ -107,7 +107,6 @@ class Packet { public:
     }
 
     void reset_buffer() {
-	assert(!shared());
 	_head = _data = _tail = _end = 0;
 	_destructor = 0;
     }
@@ -637,6 +636,10 @@ class Packet { public:
 	assert(i % __alignof__(void *) == 0);
 #endif
 	*reinterpret_cast<click_aliasable_void_pointer_t *>(xanno()->c + i) = const_cast<void *>(x);
+    }
+
+    inline Packet* data_packet() {
+        return _data_packet;
     }
 
     inline void clear_annotations(bool all = true);
