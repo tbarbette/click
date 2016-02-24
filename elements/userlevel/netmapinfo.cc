@@ -117,6 +117,7 @@ NetmapInfo::send_packet(Packet *p, int noutputs)
             ring->slot[cur].buf_idx = NETMAP_BUF_IDX(ring, (char *) p->buffer());
             ring->slot[cur].flags |= NS_BUF_CHANGED;
             // and make sure nobody uses this packet
+            assert(!p->shared());
             p->reset_buffer();
         } else
             memcpy(buf, p->data(), p_length);

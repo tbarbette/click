@@ -311,10 +311,6 @@ void DPDKDevice::free_pkt(unsigned char *, size_t, void *pktmbuf)
     rte_pktmbuf_free((struct rte_mbuf *) pktmbuf);
 }
 
-void DPDKDevice::fake_free_pkt(unsigned char *, size_t, void *)
-{
-}
-
 int DPDKDevice::NB_MBUF = 65536;
 int DPDKDevice::MBUF_DATA_SIZE =
     2048 + RTE_PKTMBUF_HEADROOM;
