@@ -92,6 +92,8 @@ NetmapInfo::send_packet(Packet *p, int noutputs)
 	int ret = nm_inject(desc, p->data(), p->length());
 	if (0) click_chatter("%s buf %p size %d returns %d\n",
 		__FUNCTION__, p->data(), p->length(), ret);
+	if (ret == 0)
+              ioctl(desc->fd, NIOCTXSYNC, 0);
 	return ret > 0 ? 0 : -1;
 #if 0
     // we can do a smart nm_inject

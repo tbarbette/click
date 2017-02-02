@@ -569,7 +569,11 @@ main(int argc, char **argv)
       break;
 
      case THREADS_AFF_OPT:
+#ifdef __USE_GNU
       setaffinity = true;
+#else
+      errh->warning("CPU affinity is not supported on this platform");
+#endif
       break;
 
     case SIMTIME_OPT: {
@@ -672,22 +676,25 @@ particular purpose.\n");
 	pthread_create(&p, 0, thread_driver, router->master()->thread(t));
 	other_threads.push_back(p);
 
+#ifdef __USE_GNU
     if (setaffinity) {
         cpu_set_t set;
         CPU_ZERO(&set);
         CPU_SET(t, &set);
         pthread_setaffinity_np(p, sizeof(cpu_set_t), &set);
     }
+#endif
     }
 #endif
 
+#ifdef __USE_GNU
     if (setaffinity) {
     cpu_set_t set;
     CPU_ZERO(&set);
     CPU_SET(0, &set);
     sched_setaffinity(0, sizeof(cpu_set_t), &set);
     }
-
+#endif
     // run driver
     router->master()->thread(0)->driver();
 

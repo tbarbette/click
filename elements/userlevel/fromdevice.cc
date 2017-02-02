@@ -202,6 +202,25 @@ FromDevice::open_packet_socket(String ifname, ErrorHandler *errh)
     return fd;
 }
 
+#if FROMDEVICE_ALLOW_MMAP
+int
+FromDevice::open_packet_socket_mmap(String ifname, ErrorHandler *errh)
+{
+	int fd = FromDevice::open_packet_socket(String ifname, ErrorHandler *errh);
+
+    struct tpacket_req req;
+    req.tp_block_size =  4096;
+    req.tp_block_nr   =   4;
+    req.tp_frame_size =  2048;
+    req.tp_frame_nr   =   8;
+    setsockopt(fd , SOL_PACKET , PACKET_RX_RING , (void*)&req , sizeof(req));
+
+    uint8_t rx_ring = mmap(NULL, req.tp_block_size * req.tp_block_nr, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
+
+    return fd;
+}
+#endif
+
 int
 FromDevice::set_promiscuous(int fd, String ifname, bool promisc)
 {
