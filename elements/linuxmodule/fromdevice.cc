@@ -104,7 +104,7 @@ FromDevice::static_cleanup()
     unregister_netdevice_notifier(&device_notifier);
 }
 
-FromDevice::FromDevice()
+FromDevice::FromDevice() : _backoff(0)
 {
     set_head(0);
     set_tail(0);
@@ -130,6 +130,7 @@ FromDevice::configure(Vector<String> &conf, ErrorHandler *errh)
 {
     _burst = 8;
     _active = true;
+    _pressure = false;
     String alignment;
     if (AnyDevice::configure_keywords(conf, errh, true) < 0
 	|| (Args(conf, this, errh)
@@ -137,6 +138,7 @@ FromDevice::configure(Vector<String> &conf, ErrorHandler *errh)
 	    .read_p("BURST", _burst)
 	    .read("ACTIVE", _active)
 	    .read("ALIGNMENT", AnyArg(), alignment)
+	    .read("PRESSURE", _pressure)
 	    .complete() < 0))
 	return -1;
 
@@ -329,8 +331,12 @@ click_fromdevice_rx_handler(struct sk_buff *skb)
     while (stolen == 0 && (fd = (FromDevice *)from_device_map.lookup(skb->dev, fd)))
 	stolen = fd->got_skb(skb);
     from_device_map.unlock(false, lock_flags);
-    if (stolen)
+    if (stolen == 1)
 	return RX_HANDLER_CONSUMED;
+#ifdef RX_HANDLER_DROPPED
+    else if (stolen == 2)
+    return RX_HANDLER_DROPPED;
+#endif
     else
 	return RX_HANDLER_PASS;
 }
@@ -432,10 +438,15 @@ FromDevice::got_skb(struct sk_buff *skb)
 	    _highwater_length = s;
 
     } else if (_capacity > 0) {
-	/* queue full, drop */
-	kfree_skb(skb);
-	_drops++;
-
+        /* queue full, drop */
+        kfree_skb(skb);
+        _drops++;
+        if (_pressure) {
+            _backoff = 1;
+            return 2;
+        } else {
+            return 1;
+        }
     } else // not yet initialized
 	return 0;
 
@@ -488,6 +499,12 @@ FromDevice::run_task(Task *)
 	npq++;
 	_count++;
     }
+#ifdef RX_HANDLER_DROPPED
+    if (_backoff && size() < (_capacity / 3) && device()->netdev_ops->ndo_reenable_itr) {
+        device()->netdev_ops->ndo_reenable_itr(device(), 0);
+        _backoff = 0;
+    }
+#endif
     if (npq == 0)
 	_empty_runs++;
     // 9/18/06: Frederic Van Quickenborne reports (1/24/05) that ticket

@@ -171,6 +171,9 @@ class FromDevice : public AnyTaskDevice, public Storage { public:
     unsigned _empty_runs;
     unsigned _count;
 
+    bool _pressure;
+    bool _backoff;
+
     enum { QSIZE = 511 };
     Packet * volatile _queue[QSIZE+1];
 #if CLICK_DEBUG_SCHEDULING
