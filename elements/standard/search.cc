@@ -32,20 +32,21 @@ Search::Search()
 int
 Search::configure(Vector<String> &conf, ErrorHandler *errh)
 {
-	int anno = PAINT2_ANNO_OFFSET;
-	String pattern;
-	bool strip_after = true;
-	bool set_anno = true;
+    int anno = PAINT2_ANNO_OFFSET;
+    String pattern;
+    bool strip_after = true;
+    bool set_anno = true;
     if (Args(conf, this, errh)
-    		.read_mp("PATTERN", pattern)
-			.read("STRIP_AFTER", strip_after)
-			.read("ANNO", AnnoArg(2), anno)
-			.read("SET_ANNO", _set_anno)
-			.complete() < 0)
-				return -1;
+            .read_mp("PATTERN", pattern)
+            .read("STRIP_AFTER", strip_after)
+            .read("ANNO", AnnoArg(2), anno)
+            .read("SET_ANNO", _set_anno)
+            .complete() < 0)
+                return -1;
     if (pattern.length() == 0) {
-	return errh->error("Cannot search for an empty string!");
+        return errh->error("Cannot search for an empty string!");
     }
+
     _anno = anno;
     _set_anno = set_anno;
     _pattern = pattern;
@@ -57,19 +58,22 @@ Search::configure(Vector<String> &conf, ErrorHandler *errh)
 void
 Search::push(int, Packet *p) {
 
-	const char* f = String::make_stable((const char*)p->data(), p->length()).search(_pattern);
-	if (f == 0) {
-		output(1).push(p);
-		return;
-	}
+    const char* f = String::make_stable((const char*)p->data(), p->length()).search(_pattern);
+    if (f == 0) {
+        checked_output_push(1, p);
+        return;
+    }
 
-	unsigned n = (f - (const char*)p->data());
-	if (_strip_after)
-		n += _pattern.length();
-	p->pull(n);
-	if (_set_anno)
-		p->set_anno_u16(_anno, p->anno_u16(_anno) + n);
-	output(0).push(p);
+    unsigned n = (f - (const char*)p->data());
+    if (_strip_after)
+        n += _pattern.length();
+
+    p->pull(n);
+
+    if (_set_anno)
+        p->set_anno_u16(_anno, p->anno_u16(_anno) + n);
+
+    output(0).push(p);
 }
 
 CLICK_ENDDECLS

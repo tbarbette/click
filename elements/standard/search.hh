@@ -20,7 +20,7 @@ CLICK_DECLS
  *
  *   s :: Search("\n\r\n\r") //Strips to the end of the pattern
  *   -> Print("HTTP REQUEST PAYLOAD") //So Print will show the content
- *   -> UntripAnno(); //Go back to where we were
+ *   -> UnstripAnno(); //Go back to where we were
  *
  *   s[1] -> Print("Malformed HTTP");
  *
