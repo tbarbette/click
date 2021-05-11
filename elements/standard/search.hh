@@ -18,7 +18,7 @@ CLICK_DECLS
  * Use this to get rid of all headers up to the end of the TCP layer, print the HTTP request payload, and
  * go back to the previous pointer:
  *
- *   s :: Search("\n\r\n\r") //Strips to the end of the pattern
+ *   s :: Search("\r\n\r\n") //Strips to the end of the pattern
  *   -> Print("HTTP REQUEST PAYLOAD") //So Print will show the content
  *   -> UnstripAnno(); //Go back to where we were
  *
